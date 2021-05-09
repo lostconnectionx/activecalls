@@ -1,0 +1,39 @@
+{
+  "name": "activecalls",
+  "version": "0.0.1",
+  "description": "twitter bot to post active calls from richmond, va",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon index.js",
+    "prodRun": "nodemon index.js -d=false",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thepeoplerva/activecalls.git"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "bugs": {
+    "url": "https://github.com/thepeoplerva/activecalls/issues"
+  },
+  "homepage": "https://github.com/thepeoplerva/activecalls#readme",
+  "dependencies": {
+    "@google-cloud/firestore": "^4.12.2",
+    "@google-cloud/storage": "^5.8.5",
+    "body-parser": "^1.19.0",
+    "ejs": "^3.1.6",
+    "esm": "^3.2.25",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "imagemin": "7.0.1",
+    "imagemin-pngquant": "^9.0.2",
+    "jimp": "^0.16.1",
+    "minimist": "^1.2.5",
+    "node-table-to-csv": "^0.1.0",
+    "nodemon": "^2.0.7",
+    "object-hash": "^2.2.0",
+    "text2png": "^2.3.0",
+    "twitter-lite": "^1.1.0"
+  }
+}
