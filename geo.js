@@ -99,8 +99,10 @@ async function getCorrectFullStreet(fullStreet, type = 'street') {
             console.log(`LL ${fullStreet} is outside of geographic area`);
         } else if (!found) {
             console.log(`Could not resolve '${fullStreet}' from Google`);
-            console.log(json)
-            console.log(json['address_components']);
+            for (let i = 0; i < json.length; i++) {
+                console.log('Result ' + i + ':');
+                console.log(json[i]['address_components']);
+            }
         }
         return false;
     } catch(err) {
