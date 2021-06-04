@@ -30,15 +30,20 @@ async function buildStoredCall(c) {
 }
 
 function getDiscordText(call) {
-    let addrQuery;
-    if (call['address'].neighborhood) {
-        addrQuery = `${utils.getNormalCase(call['address']['street'])} | ${call['address']['neighborhood']}`;
-    } else {
-        addrQuery = `${utils.getNormalCase(call['address']['street'])}`;
+    try {
+        let addrQuery;
+        if (call['address'].neighborhood) {
+            addrQuery = `${utils.getNormalCase(call['address']['street'])} | ${call['address']['neighborhood']}`;
+        } else {
+            addrQuery = `${utils.getNormalCase(call['address']['street'])}`;
+        }
+        let line1 = `${call['agency']} | ${addrQuery}`;
+        let line2 = utils.getNormalCase(call['callType'].replace(/(, )/, ' | ').trim());
+        return `-\n${line1}\n${line2}`;
+    } catch(err) {
+        console.log('Error in dbUpdateCall(): ' + err);
+        return false;
     }
-    let line1 = `${call['agency']} | ${addrQuery}`;
-    let line2 = utils.getNormalCase(call['callType'].replace(/(, )/, ' | ').trim());
-    return `-\n${line1}\n${line2}`;
 }
 
 function getStatusRank(status) {
@@ -207,6 +212,10 @@ async function sendDiscordNotifications() {
         }
         if ((storedCalls[i]['b64']) && (storedCalls[i]['timeAdded'] + 18 * 1000 < Date.now())) {
             let text = getDiscordText(storedCalls[i]);
+            if (!text) {
+                await db.updateStoredCall(i, storedCalls[i]['hash'], 'broken', true);
+                continue;
+            }
             let res = await net.postToDiscord(config.discordWebHook, text, storedCalls[i]['b64']);
             if (res) {
                 utils.printCallStatus('DISCRD', storedCalls[i]);

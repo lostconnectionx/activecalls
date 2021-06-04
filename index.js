@@ -18,7 +18,8 @@ async function executeScraper() {
             await callWorker.uploadTweetMaps();
             await db.cleanStoredCalls(calls);
             resolve();
-        } catch {
+        } catch(err) {
+            console.log('Error in executeScraper(): ' + err);
             resolve();
         }
     }).catch(console.err);

@@ -156,11 +156,12 @@ async function postToDiscord(url, text, image) {
             res.on('data', (chunk) => {
                 data += chunk;
             });
-            res.on('end', () => {
+            res.on('end', async () => {
                 if (Math.trunc(res.statusCode / 100) === 2) {
+                    await utils.wait(1000);
                     resolve(true);
                 } else {
-                    console.log('Error in postToDiscord(): ' + res.statusCode + res.statusMessage);
+                    console.log('Error in postToDiscord(): ' + res.statusCode + ' ' + res.statusMessage);
                     resolve(false);
                 }
             });
@@ -168,7 +169,7 @@ async function postToDiscord(url, text, image) {
         form.pipe(req);
         req.end();
         req.on('error', err => {
-            console.log("Error in postToDiscord(): " + err);
+            console.log('Error in postToDiscord(): ' + err);
             reject(err);
         });
     }).catch(console.err);
