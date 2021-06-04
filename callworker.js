@@ -22,6 +22,8 @@ async function buildStoredCall(c) {
         c['broken'] = true;
         c['tweeted'] = false;
         c['timeAdded'] = Date.now();
+        // todo: save image
+        await db.saveCall(c);
         utils.printCallStatus('BROKEN', c);
     }
 }
