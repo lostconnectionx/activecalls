@@ -17,6 +17,7 @@ Make sure Node.Js is installed first ([see here for instructions](https://nodejs
 git clone https://github.com/thepeoplerva/activecalls.git
 cd activecalls
 npm install
+sudo npm install -g nodemon
 ```
 
 ## Usage
@@ -28,7 +29,7 @@ npm start
 
 Development
 ```
-npm run devStart
+npm run devRun
 ```
 
 Edit the `config.js` file to add:

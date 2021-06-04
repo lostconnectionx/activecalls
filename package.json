@@ -4,8 +4,8 @@
   "description": "twitter bot to post active calls from richmond, va",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon index.js",
-    "prodRun": "nodemon index.js -d=false",
+    "start": "node index.js -d=false",
+    "devRun": "nodemon index.js -d=true",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
