@@ -1,3 +1,4 @@
+const config = require('./config');
 const db = require('./db');
 const geo = require('./geo');
 const hash = require('object-hash');
@@ -27,6 +28,19 @@ async function buildStoredCall(c) {
         utils.printCallStatus('BROKEN', c);
     }
 }
+
+function getDiscordText(call) {
+    let addrQuery;
+    if (call['address'].neighborhood) {
+        addrQuery = `${utils.getNormalCase(call['address']['street'])} | ${call['address']['neighborhood']}`;
+    } else {
+        addrQuery = `${utils.getNormalCase(call['address']['street'])}`;
+    }
+    let line1 = `${call['agency']} | ${addrQuery}`;
+    let line2 = utils.getNormalCase(call['callType'].replace(/(, )/, ' | ').trim());
+    return `-\n${line1}\n${line2}`;
+}
+
 function getStatusRank(status) {
     switch (status) {
         case 'Dispatched':
@@ -126,6 +140,7 @@ async function processCSV(data) {
                         address: {},
                         broken: false,
                         tweeted: false,
+                        sentDiscord: false,
                         syncedData: false,
                         syncedImage: false,
                     };
@@ -168,21 +183,54 @@ async function sendQueuedTweets() {
             if (res) {
                 storedCalls[i]['b64'] = res.toString('base64');
             }
-        } else if (!storedCalls[i]['tweeted'] && !storedCalls[i]['syncedImage'] && !storedCalls[i]['b64']) {
-            storedCalls[i]['b64'] = await images.createImage(storedCalls[i], storedCalls[i]['address']);
-            await db.saveImage(storedCalls[i]);
         }
         if ((storedCalls[i]['b64']) && (storedCalls[i]['timeAdded'] + 18 * 1000 < Date.now())) {
             let res = await net.tweetImage(storedCalls[i], storedCalls[i]['b64']);
             if (res) {
                 utils.printCallStatus('TWITTR', storedCalls[i]);
-                await db.updateStoredCall(i, storedCalls[i]['hash'], 'b64', false);
                 await db.updateStoredCall(i, storedCalls[i]['hash'], 'tweeted', true);
             }
         }
     }
 }
 
+async function sendDiscordNotifications() {
+    let storedCalls = db.getStoredCalls();
+    for (let i = 0; i < storedCalls.length; i++) {
+        if (storedCalls[i]['sentDiscord'] || storedCalls[i]['broken']) {
+            continue;
+        } else if (!storedCalls[i]['sentDiscord'] && storedCalls[i]['syncedImage'] && !storedCalls[i]['b64']) {
+            let res = await db.fetchStorageData('tweet_maps', `${storedCalls[i]['hash']}.png`);
+            if (res) {
+                storedCalls[i]['b64'] = res.toString('base64');
+            }
+        }
+        if ((storedCalls[i]['b64']) && (storedCalls[i]['timeAdded'] + 18 * 1000 < Date.now())) {
+            let text = getDiscordText(storedCalls[i]);
+            let res = await net.postToDiscord(config.discordWebHook, text, storedCalls[i]['b64']);
+            if (res) {
+                utils.printCallStatus('DISCRD', storedCalls[i]);
+                await db.updateStoredCall(i, storedCalls[i]['hash'], 'sentDiscord', true);
+            }
+        }
+    }
+}
+
+async function uploadTweetMaps() {
+    let storedCalls = db.getStoredCalls();
+    for (let i = 0; i < storedCalls.length; i++) {
+        if (storedCalls[i]['syncedImage'] || storedCalls[i]['broken']) {
+            continue;
+        }
+        if (!storedCalls[i]['b64']) {
+            storedCalls[i]['b64'] = await images.createImage(storedCalls[i], storedCalls[i]['address']);
+        }
+        await db.saveImage(storedCalls[i]);
+    }
+}
+
 exports.processCalls = processCalls;
 exports.processCSV = processCSV;
+exports.sendDiscordNotifications = sendDiscordNotifications;
 exports.sendQueuedTweets = sendQueuedTweets;
+exports.uploadTweetMaps = uploadTweetMaps;

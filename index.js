@@ -14,6 +14,8 @@ async function executeScraper() {
             await utils.wait(3000);
             await callWorker.processCalls(calls);
             await callWorker.sendQueuedTweets();
+            await callWorker.sendDiscordNotifications();
+            await callWorker.uploadTweetMaps();
             await db.cleanStoredCalls(calls);
             resolve();
         } catch {

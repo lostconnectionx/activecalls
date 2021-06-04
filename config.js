@@ -21,6 +21,9 @@ let googleApiKeys = [''];
 // googleApiKeys.push('ENTER_OPTIONAL_SECONDARY_KEY_HERE');
 // googleApiKeys.push('ENTER_OPTIONAL_TERTIARY_KEY_HERE');
 
+// discord webhook
+let discordWebHook = '';
+
 // DO NOT EDIT BELOW THIS LINE
 
 if (googleBucketName.length === 0 || googleKeyFile.length === 0 || googleApiKeys[0].length === 0) {
@@ -33,6 +36,10 @@ if (appTokens['consumerKey'].length === 0 || appTokens['consumerSecret'].length 
     process.exit();
 }
 
+if (discordWebHook.length === 0) {
+    console.log('Missing Discord Webhook in config.js');
+    process.exit();
+}
 let googleApiKeyCounter = 0;
 
 function getGoogleApiKey() {
@@ -45,6 +52,7 @@ function getGoogleApiKey() {
 }
 
 exports.appTokens = appTokens;
+exports.discordWebHook = discordWebHook;
 exports.getGoogleApiKey = getGoogleApiKey;
 exports.googleBucketName = googleBucketName;
 exports.googleKeyFile = googleKeyFile;

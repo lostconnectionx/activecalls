@@ -1,5 +1,6 @@
 const config = require('./config');
 const express = require('express');
+const FormData = require('form-data');
 const https = require('https');
 const Twitter = require('twitter-lite');
 const utils = require('./utils');
@@ -134,6 +135,45 @@ function newTwitterClient(subdomain = 'api') {
     });
 }
 
+async function postToDiscord(url, text, image) {
+    return new Promise(async (resolve, reject) => {
+        if (image.substring(0, 21) === 'data:image/png;base64,') {
+            image = image.substring(21, image.length);
+        }
+        let buf = Buffer.from(image, 'base64');
+        const form = new FormData();
+        form.append('file', buf, { filename: 'active_call.png'});
+        form.append('payload_json', JSON.stringify({
+            'content': text,
+            'embeds': null
+        }));
+        let req = https.request(url, {method: 'POST', headers: form.getHeaders(), agent: defaultAgent}, res => {
+            res.setEncoding('utf8');
+            let data = '';
+            setTimeout(function () {
+                reject('Timeout in postToDiscord()');
+            }, 1000 * 60);
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+            res.on('end', () => {
+                if (Math.trunc(res.statusCode / 100) === 2) {
+                    resolve(true);
+                } else {
+                    console.log('Error in postToDiscord(): ' + res.statusCode + res.statusMessage);
+                    resolve(false);
+                }
+            });
+        });
+        form.pipe(req);
+        req.end();
+        req.on('error', err => {
+            console.log("Error in postToDiscord(): " + err);
+            reject(err);
+        });
+    }).catch(console.err);
+}
+
 async function tweetImage(call, img) {
     return new Promise(async (resolve, reject) => {
         let uploadApi = newTwitterClient('upload');
@@ -211,6 +251,7 @@ exports.fetchHttpsBinary = fetchHttpsBinary;
 exports.fetchHttpsJson = fetchHttpsJson;
 exports.fetchMapImage = fetchMapImage;
 exports.fetchRvaCalls = fetchRvaCalls;
+exports.postToDiscord = postToDiscord;
 exports.fetchStaticImage = fetchStaticImage;
 exports.newTwitterClient = newTwitterClient;
 exports.tweetImage = tweetImage;
