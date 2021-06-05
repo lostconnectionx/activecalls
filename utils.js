@@ -1,5 +1,6 @@
 const fs = require('fs').promises;
 const minimist = require('minimist');
+const titleCase = require('title-case');
 
 const args = minimist(process.argv.slice(2), {
     alias: {
@@ -21,13 +22,12 @@ function getFilePrefix() {
 }
 
 function getNormalCase(string) {
-    string = string.toLowerCase();
-    const words = string.split(" ");
-    for (let i = 0; i < words.length; i++) {
-        words[i] = words[i][0].toUpperCase() + words[i].substr(1);
+    if (typeof 'string' !== 'string') {
+        console.log('Error in getNormalCase(): ' + string);
+        return false;
     }
-    string = words.join(" ");
-    return string;
+    string = string.toLowerCase();
+    return titleCase.titleCase(string);
 }
 
 function printCallStatus(text, call) {

@@ -35,6 +35,7 @@
     "nodemon": "^2.0.7",
     "object-hash": "^2.2.0",
     "text2png": "^2.3.0",
+    "title-case": "^3.0.3",
     "twitter-lite": "^1.1.0"
   }
 }
