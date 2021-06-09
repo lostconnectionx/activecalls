@@ -117,15 +117,20 @@ async function saveImage(c) {
     await file.exists(async (err, exists) => {
         if (exists) {
             return;
+        } else if (!c['b64']) {
+            return false;
         } else {
             await file.save(Buffer.from(c['b64'], 'base64'), async (err) => {
                 if (err) {
-                    console.log("Error in dbSaveImage(): " + err);
+                    console.log("Error in saveImage(): " + err);
                     return false;
                 } else {
                     c['syncedImage'] = true;
                     await updateCall(c, c['hash'], 'syncedImage', true);
                 }
+            }).catch((err) => {
+                console.log("Error in saveImage(): " + err);
+                return false;
             });
         }
     });
