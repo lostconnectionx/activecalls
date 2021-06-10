@@ -20,9 +20,11 @@ async function executeScraper() {
             resolve();
         } catch(err) {
             console.log('Error in executeScraper(): ' + err);
-            resolve();
+            throw new Error('Error in executeScraper(): ' + err);
         }
-    }).catch(console.err);
+    }).catch(err => {
+        console.error(err)
+    });
 }
 
 async function main() {

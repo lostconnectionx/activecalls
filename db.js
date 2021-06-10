@@ -34,8 +34,9 @@ async function cleanStoredCalls(calls) {
                 await deleteCall(hash);
             }
         }
-    } catch (err) {
+    } catch(err) {
         console.log(err);
+        throw new Error('Error in cleanStoredCalls(): ' + err);
     }
 }
 
@@ -47,7 +48,10 @@ async function deleteCall(hash) {
             }
         }
         reject();
-    }).catch(console.err);
+    }).catch(err => {
+        console.error(err);
+        throw new Error('Error in deleteCall(): ' + err);
+    });
 }
 
 async function downloadCalls() {
@@ -64,7 +68,7 @@ async function downloadCalls() {
 async function fetchStorageData(path, filename) {
     return new Promise(async (resolve, reject) => {
         let file = storage.bucket(bucketName).file(`${path}/${filename}`);
-        await file.download(function (err, contents) {
+        file.download(function (err, contents) {
             if (!err) {
                 resolve(contents);
             } else {
@@ -72,7 +76,10 @@ async function fetchStorageData(path, filename) {
                 return false;
             }
         });
-    }).catch(console.err);
+    }).catch(err => {
+        console.error(err);
+        throw new Error('Error in fetchStorageData(): ' + err);
+    });
 }
 
 function getStoredCalls() {
@@ -87,7 +94,7 @@ async function moveColdCall(hash) {
         await saveCall(doc.data(), 'coldcalls');
         await activeCall.delete();
     } catch (err) {
-        console.log("Error in dbMoveColdCall(): " + err);
+        console.log("Error in moveColdCall(): " + err);
     }
 }
 
@@ -103,9 +110,12 @@ async function saveCall(c, path = 'activecalls') {
         delete temp['syncedData'];
         c['syncedData'] = true;
         pushStoredCall(c);
-        return await document.set(temp);
+        return await document.set(temp).catch(err => {
+            console.error(err);
+            throw new Error('Error in saveCall(): ' + err);
+        });            
     } catch (err) {
-        console.log("Error in dbSaveCall(): " + err);
+        console.log("Error in saveCall(): " + err);
         c['syncedData'] = false;
         pushStoredCall(c);
         return false;
@@ -128,7 +138,7 @@ async function saveImage(c) {
                     c['syncedImage'] = true;
                     await updateCall(c, c['hash'], 'syncedImage', true);
                 }
-            }).catch((err) => {
+            }).catch(err => {
                 console.log("Error in saveImage(): " + err);
                 return false;
             });
